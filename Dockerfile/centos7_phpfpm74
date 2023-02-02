@@ -1,0 +1,35 @@
+# author stark v0.1 
+# 基于centos7 +  php-fpm:7.4
+# docker build -t php-fpm:7.4 -f centos7_base .
+
+FROM centos:centos7
+
+# 安装依赖编译的依赖 和 常用工具
+RUN yum -y update && yum -y install gcc gcc-c++ autoconf automake zlib zlib-devel openssl openssl-devel pcre pcre-devel libxml2 libxml2-devel sqlite-devel wget curl libtool php-dev php-pear vim
+
+
+#下载php版本
+RUN cd /root/ && wget https://www.php.net/distributions/php-7.4.28.tar.gz && tar -zxvf php-7.4.28.tar.gz
+
+# 安装和编译
+RUN /root/php-7.4.28/configure --prefix=/usr/local/php7 --enable-fpm --enable-debug && make && make install
+
+RUN cp /root/php-7.4.28/php.ini-development /usr/local/php7/etc/php.ini 
+&& cp /usr/local/php7/etc/php-fpm.conf.default /usr/local/php7/etc/php-fpm.conf 
+&& cp /usr/local/php7/etc/php-fpm.d/www.conf.default /usr/local/php7/etc/php-fpm.d/www.conf
+
+# 设置全局php.ini,设置后可以自动添加
+RUN pear config-set php_ini /usr/local/php7/etc/php.ini 
+
+#Apt
+#apt-get install php-dev php-pear autoconf，automake，libtool  -y
+
+#设置全局变量
+#RUN ln -s /usr/local/php7/sbin/php-fpm /usr/bin/php-fpm 
+
+RUN ln -s /usr/local/php7/sbin/php-fpm /usr/bin/php-fpm  && echo "php-fpm -c /usr/local/php7/etc/php.ini -y /usr/local/php7/etc/php-fpm.conf && tail -f /dev/null" > /run.sh
+
+cmd ["sh":"/run.sh"]
+
+EXPOSE 9000
+
