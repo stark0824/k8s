@@ -44,9 +44,9 @@ RUN  echo "php-fpm && tail -f /dev/null" > $HOME/run.sh
 # echo "php-fpm -c /usr/local/php7/etc/php.ini -y /usr/local/php7/etc/php-fpm.conf \
 # && tail -f /dev/null" > /run.sh
 
-WORKDIR /root
 
-CMD ["/bin/bash","./run.sh"]
+
+CMD ["/bin/bash","~/run.sh"]
 
 EXPOSE 9000
 
