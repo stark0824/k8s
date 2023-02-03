@@ -74,7 +74,7 @@ tar -zxvf redis-4.2.0.tgz &&  cd redis-4.2.0 && phpize \
 RUN wget https://pecl.php.net/get/yaf-3.0.7.tgz && \
 tar -zxvf yaf-3.0.7.tgz &&  cd yaf-3.0.7.tgz && phpize \
 &&  ./configure --with-php-config=/usr/local/php7/bin/php-config \
-&& make && make install && echo 'extension=redis.so' >> /usr/local/php7/lib/php.ini
+&& make && make install && echo 'extension=yaf.so' >> /usr/local/php7/lib/php.ini
 
 #设置启动脚本 
 RUN  echo "php-fpm && tail -f /dev/null" > $HOME/run.sh 
