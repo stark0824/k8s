@@ -65,7 +65,7 @@ tar -zxvf redis-4.2.0.tgz &&  cd redis-4.2.0 && phpize \
 # yaf yaf-3.0.7 https://pecl.php.net/get/yaf-3.0.7.tgz
 
 RUN wget https://pecl.php.net/get/yaf-3.0.7.tgz && \
-tar -zxvf yaf-3.0.7.tgz &&  cd yaf-3.0.7.tgz && phpize \
+tar -zxvf yaf-3.0.7.tgz &&  cd yaf-3.0.7 && phpize \
 &&  ./configure --with-php-config=/usr/local/php7/bin/php-config \
 && make && make install && echo 'extension=redis.so' >> /usr/local/php7/lib/php.ini
 
