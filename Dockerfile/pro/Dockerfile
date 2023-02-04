@@ -1,4 +1,4 @@
-# docker build -t php-fpm72:v2.1_auto -f centos7_phpfpm72_pro .
+# docker build -t php-fpm72:v3.0_auto -f centos7_phpfpm72_auto .
 
 FROM php-fpm72:v1.0_pure
 
@@ -12,17 +12,17 @@ COPY . .
 # libdatrie
 RUN tar -zxvf /package/libdatrie-0.2.4.tar.gz && \
 cd libdatrie-0.2.4 && \
-make clean &&  \
 ./configure --prefix=/usr/local/libdatrie \
 && make && make install
 
 
 # trie_filter
-RUN yum install -y unzip && \ 
-wget https://github.com/jiopuud/trie_filter/archive/master.zip && \
-unzip /package/master.zip && cd trie_filter-master/ phpize && \
-./configure --with-php-config=/usr/local/php7/bin/php-config \ 
---with-trie_filter=/usr/local/libdatrie 
+RUN yum install -y unzip && \
+unzip /package/trie_filter-master.zip && \
+ cd /package/trie_filter-master/ && phpize && \
+./configure --with-php-config=/usr/local/php7/bin/php-config  \ 
+--with-trie_filter=/usr/local/libdatrie \
+&& make && make install \
 && echo 'extension=trie_filter.so' >> /usr/local/php7/lib/php.ini 
 
 # 更改时区

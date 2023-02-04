@@ -18,8 +18,10 @@ cd libdatrie-0.2.4 && \
 
 # trie_filter
 RUN yum install -y unzip && \
-unzip /package/trie_filter-master.zip && cd /package/trie_filter-master/ && phpize && \
-./configure --with-php-config=/usr/local/php7/bin/php-config --with-trie_filter=/usr/local/libdatrie \
+unzip /package/trie_filter-master.zip && \
+ cd /package/trie_filter-master/ && phpize && \
+./configure --with-php-config=/usr/local/php7/bin/php-config  \ 
+--with-trie_filter=/usr/local/libdatrie \
 && make && make install \
 && echo 'extension=trie_filter.so' >> /usr/local/php7/lib/php.ini 
 
