@@ -1,4 +1,4 @@
-# docker build -t php-fpm:test_v1.0 -f centos7_phpfpm72 .
+# docker build -t php-fpm:test_v1.0 -f centos7_phpfpm72_ext .
 # author stark v0.2
 # 基于centos7 +  php-fpm:7.2
 
@@ -72,9 +72,22 @@ tar -zxvf redis-4.2.0.tgz &&  cd redis-4.2.0 && phpize \
 # yaf yaf-3.0.7 https://pecl.php.net/get/yaf-3.0.7.tgz
 
 RUN wget https://pecl.php.net/get/yaf-3.0.7.tgz && \
-tar -zxvf yaf-3.0.7.tgz &&  cd yaf-3.0.7.tgz && phpize \
+tar -zxvf yaf-3.0.7.tgz &&  cd yaf-3.0.7 && phpize \
 &&  ./configure --with-php-config=/usr/local/php7/bin/php-config \
 && make && make install && echo 'extension=yaf.so' >> /usr/local/php7/lib/php.ini
+
+# swoole-4.2.11
+RUN wget https://pecl.php.net/get/swoole-4.2.11.tgz &&  \
+tar -zxvf swoole-4.2.11.tgz &&  cd swoole-4.2.11 && phpize \
+&&  ./configure --with-php-config=/usr/local/php7/bin/php-config
+&& make && make install && echo 'extension=swoole.so' >> /usr/local/php7/lib/php.ini
+
+#mongodb-1.5.3
+RUN wget https://pecl.php.net/get/mongodb-1.5.3.tgz &&  \
+tar -zxvf mongodb-1.5.3.tgz &&  cd swoole-4.2.11 && phpize \
+&&  ./configure --with-php-config=/usr/local/php7/bin/php-config
+&& make && make install && echo 'extension=mongodb.so' >> /usr/local/php7/lib/php.ini
+
 
 #设置启动脚本 
 RUN  echo "php-fpm && tail -f /dev/null" > $HOME/run.sh 
