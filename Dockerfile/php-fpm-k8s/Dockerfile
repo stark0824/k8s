@@ -1,6 +1,5 @@
-# docker build -t php-fpm:lost_v0.1 -f centos7_phpfpm72_last .
-# author stark v0.2
-# 基于centos7 +  php-fpm:7.2
+# php-fpm:k8s_1.x 
+# # docker build -t php-fpm:k8s_v1.x -f php-fpm:k8s_v1.x .
 
 FROM centos:centos7
 
@@ -71,7 +70,8 @@ make && make install && echo 'extension=swoole.so' >> /usr/local/php7/lib/php.in
 
 RUN tar zxf /usr/local/src/mongodb-1.5.3.tgz && cd /usr/local/src/mongodb-1.5.3 && \
 phpize && ./configure --with-php-config=/usr/local/php7/bin/php-config && \
-make && make install && echo 'extension=mongodb.so' >> /usr/local/php7/lib/php.ini  
+make && make install && echo 'extension=mongodb.so' >> /usr/local/php7/lib/php.ini 
+
 
 # +----------------------------------------------------------------------
 # | trie_filter
@@ -82,9 +82,9 @@ cd /usr/local/src/libdatrie-0.2.4 && \
 ./configure --prefix=/usr/local/libdatrie &&  \
 make && make install
 
-RUN yum install -y unzip && \
+RUN yum -y install unzip && cd /usr/local/src/ && \
 unzip /usr/local/src/trie_filter-master.zip && \
- cd /package/trie_filter-master/ && phpize && \
+ cd /usr/local/src/trie_filter-master/ && phpize && \
 ./configure --with-php-config=/usr/local/php7/bin/php-config  \ 
 --with-trie_filter=/usr/local/libdatrie && \
 make && make install && \
@@ -94,27 +94,31 @@ echo 'extension=trie_filter.so' >> /usr/local/php7/lib/php.ini
 # | xdiff
 # +----------------------------------------------------------------------
 
+# https://pecl.php.net/get/xdiff-2.0.1.tgz
+
+
 RUN tar zxf /usr/local/src/libxdiff-0.23.tar.gz && \
 cd /usr/local/src/libxdiff-0.23 && \
-./configure --prefix=/usr/local/libxdiff &&  \
-make && make install
+./configure && make && make install
 
-RUN tar zxf /usr/local/src/xdiff-2.0.1.tgz && \
-cd /usr/local/src/xdiff-2.0.1 && \
-./configure --with-php-config=/usr/local/php7/bin/php-config  \ 
-make && make install && \
-echo 'extension=xdiff.so' >> /usr/local/php7/lib/php.ini 
+RUN cd ~ && wget https://pecl.php.net/get/xdiff-2.0.1.tgz && \
+tar zxf ~/xdiff-2.0.1.tgz &&  cd xdiff-2.0.1 && \
+phpize && ./configure --with-php-config=/usr/local/php7/bin/php-config && \
+make && make install && echo 'extension=xdiff.so' >> /usr/local/php7/lib/php.ini
 
-RUN    echo "php-fpm && tail -f /dev/null" > /root/run.sh  && \
-rm -rf /usr/local/src/ 
+# 安装最新版本的GCC
+# RUN yum -y install centos-release-scl && yum -y install devtoolset-9-gcc devtoolset-9-gcc-c++ devtoolset-9-binutils && scl enable devtoolset-9 bash && echo "source /opt/rh/devtoolset-9/enable" >> /etc/profile 
 
-# grpc 的 gcc 需要升级到9版本
-# RUN yum -y install centos-release-scl && 
-# yum -y install devtoolset-9-gcc devtoolset-9-gcc-c++ devtoolset-9-binutils && \
-# scl enable devtoolset-9 bash && \
-# echo "source /opt/rh/devtoolset-9/enable" >> /etc/profile 
+RUN tar zxf /usr/local/src/grpc-1.50.0.tgz &&  cd /usr/local/src/grpc-1.50.0 && \
+phpize && ./configure --with-php-config=/usr/local/php7/bin/php-config && \
+make && make install && echo 'extension=grpc.so' >> /usr/local/php7/lib/php.ini
 
+RUN tar zxf /usr/local/src/protobuf-3.21.9.tgz &&  cd /usr/local/src/protobuf-3.21.9 && \
+phpize && ./configure --with-php-config=/usr/local/php7/bin/php-config && \
+make && make install && echo 'extension=protobuf.so' >> /usr/local/php7/lib/php.ini
 
+# 写入启动脚本
+# RUN echo "php-fpm && tail -f /dev/null" > /root/run.sh  && rm -rf /usr/local/src/ 
 # CMD ["/bin/bash","/root/run.sh"]
 
 EXPOSE 80
