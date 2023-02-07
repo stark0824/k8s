@@ -1,0 +1,27 @@
+# +----------------------------------------------------------------------
+# | Author:Stark
+# +----------------------------------------------------------------------
+# | Date:2023/02/07
+# +----------------------------------------------------------------------
+# | Desc: php-7.2.28  wget https://pecl.php.net/get/
+# +----------------------------------------------------------------------
+# | Shell: docker build -t php-fpm:k8s_v1.0_pure -f k8s_v1.0_pure .
+# +----------------------------------------------------------------------
+
+FROM php-fpm:centos7
+
+ENV SRC_PATH /usr/local/src/
+ENV PHP_COMPILE_PATH /usr/local/php7/bin/php-config
+ENV PHP_INI_PATH /usr/local/php7/lib/php.ini
+ENV PHP_INSTALL_PATH /usr/local/php7
+
+WORKDIR /usr/local/src/ 
+
+
+# 安装依赖编译的依赖 和 常用工具 
+RUN yum -y update && yum -y install gcc gcc-c++ autoconf  \ 
+automake zlib zlib-devel openssl openssl-devel libxml2 libxml2-devel \
+sqlite-devel libtool php-dev php-pear vim php-devel \
+wget curl git libcurl libcurl-devel unzip
+
+# k8s_v1.x_pure 安装PHP编译前所需要的工具

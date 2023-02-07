@@ -1,0 +1,99 @@
+# +----------------------------------------------------------------------
+# | Author:Stark
+# +----------------------------------------------------------------------
+# | Date:2023/02/07
+# +----------------------------------------------------------------------
+# | Desc: php-7.2.28  wget https://pecl.php.net/get/
+# +----------------------------------------------------------------------
+# | Shell: docker build -t php-fpm:k8s_v1.3_pure -f k8s_v1.3_pure .
+# +----------------------------------------------------------------------
+
+FROM php-fpm:k8s_v1.2_pure
+
+ENV SRC_PATH /usr/local/src/
+ENV PHP_COMPILE_PATH /usr/local/php7/bin/php-config
+ENV PHP_INI_PATH /usr/local/php7/lib/php.ini
+
+WORKDIR /usr/local/src/ 
+
+COPY libdatrie-0.2.4.tar.gz .
+COPY trie_filter-master.zip .
+COPY libxdiff-0.23.tar.gz .
+
+# +----------------------------------------------------------------------
+# | trie_filter
+# +----------------------------------------------------------------------
+
+RUN cd ${SRC_PATH} && tar zxf libdatrie-0.2.4.tar.gz && \
+cd libdatrie-0.2.4 && \
+./configure --prefix=/usr/local/libdatrie &&  \
+make && make install
+
+RUN cd ${SRC_PATH} && \
+unzip /usr/local/src/trie_filter-master.zip && \
+ cd trie_filter-master/ && phpize && \
+./configure --with-php-config=${PHP_COMPILE_PATH}  \ 
+--with-trie_filter=/usr/local/libdatrie && \
+make && make install && \
+echo 'extension=trie_filter.so' >> ${PHP_INI_PATH}
+
+# +----------------------------------------------------------------------
+# | xdiff
+# +----------------------------------------------------------------------
+
+RUN cd ${SRC_PATH} && tar zxf libxdiff-0.23.tar.gz && \
+cd libxdiff-0.23 && \
+./configure && make && make install
+
+RUN cd ${SRC_PATH} && wget https://pecl.php.net/get/xdiff-2.0.1.tgz && \
+tar zxf xdiff-2.0.1.tgz &&  cd xdiff-2.0.1 && \
+phpize && ./configure --with-php-config=${PHP_COMPILE_PATH} && \
+make && make install && echo 'extension=xdiff.so' >> ${PHP_INI_PATH}
+
+RUN rm -rf libdatrie-0.2.4 libdatrie-0.2.4.tar.gz \
+libxdiff-0.23 libxdiff-0.23.tar.gz \
+mongodb-1.5.3 mongodb-1.5.3.tgz \
+redis-4.2.0 redis-4.2.0.tgz \
+swoole-4.2.11 swoole-4.2.11.tgz \
+trie_filter-master trie_filter-master.zip \
+xdiff-2.0.1 xdiff-2.0.1.tgz \
+yaf-3.0.7 yaf-3.0.7.tgz
+
+# +----------------------------------------------------------------------
+# | 安装grpc 需要升级gcc 7.3
+# +----------------------------------------------------------------------
+# + yum -y install centos-release-scl 
+# +----------------------------------------------------------------------
+# | yum -y install devtoolset-7-gcc devtoolset-7-gcc-c++ devtoolset-7-binutils
+# +----------------------------------------------------------------------
+# | scl enable devtoolset-7 bash
+# +----------------------------------------------------------------------
+
+
+# +----------------------------------------------------------------------
+# | grpc-1.50.0 
+# +----------------------------------------------------------------------
+# | protobuf-3.21.9
+# +----------------------------------------------------------------------
+
+RUN cd ${SRC_PATH} && wget https://pecl.php.net/get/grpc-1.50.0.tgz && \
+tar zxf grpc-1.50.0.tgz && cd grpc-1.50.0 && \
+phpize && ./configure --with-php-config=${PHP_COMPILE_PATH} && \
+make && make install && echo 'extension=grpc.so' >> ${PHP_INI_PATH}
+
+# protobuf
+RUN cd ${SRC_PATH} && wget https://pecl.php.net/get/protobuf-3.21.9.tgz && \
+tar zxf protobuf-3.21.9.tgz && cd protobuf-3.21.9 
+phpize && ./configure --with-php-config=${PHP_COMPILE_PATH} && \
+make && make install && echo 'extension=protobuf.so' >> ${PHP_INI_PATH}
+
+RUN cd ${SRC_PATH} && rm -rf grpc-1.50.0.tgz grpc-1.50.0 \
+protobuf-3.21.9.tgz protobuf-3.21.9
+
+# 写入启动脚本
+RUN echo "php-fpm && tail -f /dev/null" > /root/run.sh  && rm -rf /usr/local/src/ 
+CMD ["/bin/bash","/root/run.sh"]
+
+EXPOSE 80
+EXPOSE 443
+EXPOSE 9000

@@ -1,0 +1,63 @@
+# +----------------------------------------------------------------------
+# | Author:Stark
+# +----------------------------------------------------------------------
+# | Date:2023/02/07
+# +----------------------------------------------------------------------
+# | Desc: php-7.2.28  wget https://pecl.php.net/get/
+# +----------------------------------------------------------------------
+# | Shell: docker build -t php-fpm:k8s_v1.3_pure -f k8s_v1.3_pure .
+# +----------------------------------------------------------------------
+
+FROM php-fpm:k8s_v1.2_pure
+
+ENV SRC_PATH /usr/local/src/
+ENV PHP_COMPILE_PATH /usr/local/php7/bin/php-config
+ENV PHP_INI_PATH /usr/local/php7/lib/php.ini
+
+WORKDIR /usr/local/src/ 
+
+COPY libdatrie-0.2.4.tar.gz .
+COPY trie_filter-master.zip .
+COPY libxdiff-0.23.tar.gz .
+
+# +----------------------------------------------------------------------
+# | trie_filter
+# +----------------------------------------------------------------------
+
+RUN cd ${SRC_PATH} && tar zxf libdatrie-0.2.4.tar.gz && \
+cd libdatrie-0.2.4 && \
+./configure --prefix=/usr/local/libdatrie &&  \
+make && make install
+
+RUN cd ${SRC_PATH} && \
+unzip /usr/local/src/trie_filter-master.zip && \
+ cd trie_filter-master/ && phpize && \
+./configure --with-php-config=${PHP_COMPILE_PATH}  \ 
+--with-trie_filter=/usr/local/libdatrie && \
+make && make install && \
+echo 'extension=trie_filter.so' >> ${PHP_INI_PATH}
+
+# +----------------------------------------------------------------------
+# | xdiff
+# +----------------------------------------------------------------------
+
+RUN cd ${SRC_PATH} && tar zxf libxdiff-0.23.tar.gz && \
+cd libxdiff-0.23 && \
+./configure && make && make install
+
+RUN cd ${SRC_PATH} && wget https://pecl.php.net/get/xdiff-2.0.1.tgz && \
+tar zxf xdiff-2.0.1.tgz &&  cd xdiff-2.0.1 && \
+phpize && ./configure --with-php-config=${PHP_COMPILE_PATH} && \
+make && make install && echo 'extension=xdiff.so' >> ${PHP_INI_PATH}
+
+RUN rm -rf libdatrie-0.2.4 libdatrie-0.2.4.tar.gz \
+libxdiff-0.23 libxdiff-0.23.tar.gz \
+mongodb-1.5.3 mongodb-1.5.3.tgz \
+redis-4.2.0 redis-4.2.0.tgz \
+swoole-4.2.11 swoole-4.2.11.tgz \
+trie_filter-master trie_filter-master.zip \
+xdiff-2.0.1 xdiff-2.0.1.tgz \
+yaf-3.0.7 yaf-3.0.7.tgz
+
+
+

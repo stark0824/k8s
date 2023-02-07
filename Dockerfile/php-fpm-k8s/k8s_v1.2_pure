@@ -1,0 +1,49 @@
+# +----------------------------------------------------------------------
+# | Author:Stark
+# +----------------------------------------------------------------------
+# | Date:2023/02/07
+# +----------------------------------------------------------------------
+# | Desc: php-7.2.28  wget https://pecl.php.net/get/
+# +----------------------------------------------------------------------
+# | Shell: docker build -t php-fpm:k8s_v1.2_pure -f k8s_v1.2_pure .
+# +----------------------------------------------------------------------
+
+FROM php-fpm:k8s_v1.1_pure
+
+ENV SRC_PATH /usr/local/src/
+ENV PHP_COMPILE_PATH /usr/local/php7/bin/php-config
+ENV PHP_INI_PATH /usr/local/php7/lib/php.ini
+
+WORKDIR /usr/local/src/ 
+
+# +----------------------------------------------------------------------
+# | yaf yaf-3.0.7.tgz 
+# +----------------------------------------------------------------------
+# | swoole swoole-4.2.11.tgz
+# +----------------------------------------------------------------------
+# | mongodb mongodb-1.5.3.tgz 
+# +----------------------------------------------------------------------
+# | redis redis-4.2.0.tgz
+# +----------------------------------------------------------------------
+
+RUN cd ${SRC_PATH} && wget https://pecl.php.net/get/redis-4.2.0.tgz && \
+tar -zxvf redis-4.2.0.tgz &&  cd redis-4.2.0 && phpize \
+&&  ./configure --with-php-config=${PHP_COMPILE_PATH} \
+&& make && make install && echo 'extension=redis.so' >> ${PHP_INI_PATH}
+
+RUN cd ${SRC_PATH} && wget https://pecl.php.net/get/swoole-4.2.11.tgz && \
+tar -zxvf swoole-4.2.11.tgz &&  cd swoole-4.2.11 && phpize \
+&&  ./configure --with-php-config=${PHP_COMPILE_PATH} \
+&& make && make install && echo 'extension=swoole.so' >> ${PHP_INI_PATH}
+
+RUN cd ${SRC_PATH} && wget https://pecl.php.net/get/yaf-3.0.7.tgz && \
+tar -zxvf yaf-3.0.7.tgz &&  cd yaf-3.0.7 && phpize \
+&&  ./configure --with-php-config=${PHP_COMPILE_PATH} \
+&& make && make install && echo 'extension=yaf.so' >> ${PHP_INI_PATH}
+
+RUN cd ${SRC_PATH} && wget https://pecl.php.net/get/mongodb-1.5.3.tgz && \
+tar -zxvf mongodb-1.5.3.tgz &&  cd mongodb-1.5.3 && phpize \
+&&  ./configure --with-php-config=${PHP_COMPILE_PATH} \
+&& make && make install && echo 'extension=mongodb.so' >> ${PHP_INI_PATH}
+
+

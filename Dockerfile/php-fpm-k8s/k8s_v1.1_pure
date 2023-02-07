@@ -1,0 +1,45 @@
+# +----------------------------------------------------------------------
+# | Author:Stark
+# +----------------------------------------------------------------------
+# | Date:2023/02/07
+# +----------------------------------------------------------------------
+# | Desc: php-7.2.28  wget https://pecl.php.net/get/
+# +----------------------------------------------------------------------
+# | Shell: docker build -t php-fpm:k8s_v1.1_pure -f k8s_v1.1_pure .
+# +----------------------------------------------------------------------
+
+FROM php-fpm:k8s_v1.0_pure
+
+ENV SRC_PATH /usr/local/src/
+ENV PHP_COMPILE_PATH /usr/local/php7/bin/php-config
+ENV PHP_INI_PATH /usr/local/php7/lib/php.ini
+ENV PHP_INSTALL_PATH /usr/local/php7
+
+WORKDIR /usr/local/src/ 
+
+# 解压 安装 php-7.2.28
+
+RUN cd ${SRC_PATH} && wget https://www.php.net/distributions/php-7.2.28.tar.gz && \
+tar zxf ${SRC_PATH}/php-7.2.28.tar.gz && cd ${SRC_PATH}/php-7.2.28 && \
+./configure --prefix=${PHP_INSTALL_PATH} \
+ --with-php-config=${PHP_COMPILE_PATH} \
+ --enable-fpm  \
+ --enable-debug \
+ --enable-opcache \
+ --enable-zip \
+ --enable-sockets \
+ --with-pdo-mysql \
+ --with-mysqli \
+ --with-pear \
+ --with-curl \
+ --with-openssl && make && make install
+
+# 为php命令建立软链接，加入到环境变量中
+RUN ln -s /usr/local/php7/bin/php /usr/local/bin/php && \
+cp /usr/local/src/php-7.2.28/php.ini-development ${PHP_INI_PATH}
+
+
+# 为php-fpm命令建立软链接，加入到环境变量中
+RUN ln -s /usr/local/php7/sbin/php-fpm /usr/local/sbin/php-fpm && \ 
+cp /usr/local/php7/etc/php-fpm.conf.default /usr/local/php7/etc/php-fpm.conf && \ 
+cp /usr/local/php7/etc/php-fpm.d/www.conf.default /usr/local/php7/etc/php-fpm.d/www.conf
