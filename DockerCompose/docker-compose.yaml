@@ -1,0 +1,30 @@
+version: '3'
+services:
+  www:
+    image: alpine:1.0  #镜像
+    container_name: www  #定义容器名称
+    restart: always  #开机启动，失败也会一直重启
+    privileged: true
+    user: root
+    volumes:
+      - /Users/stark/server/K8s/Code/www:/home/work/www
+  gzcpserver:
+    image: nginx:proxy_v2.0
+    container_name: web
+    restart: always
+    privileged: true
+    user: root
+    depends_on:
+      - www #www启动之后再启动
+    ports:
+      - 80:80
+      - 443:443 
+      - 11211:11211
+      - 6379:6379 
+      - 27017:27017 
+      - 8100:8100 
+      - 8101:8101
+    volumes:
+      - /Users/stark/server/K8s/Code/www/cpserver/conf/:/usr/local/nginx/conf/servers
+      - /Users/stark/server/K8s/Code/www/:/home/work/www/
+    command: /bin/sh /usr/local/src/run.sh
