@@ -1,0 +1,24 @@
+version: "3.5"
+services:
+  etcd:
+    hostname: etcd
+    image: bitnami/etcd:latest
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+    privileged: true
+    volumes:
+      - "/Users/stark/server/data/etcd:/bitnami/etcd"# 注意这个目录容器要可写，不然会报cannot access data directory: open
+    environment:
+      - "ETCD_ADVERTISE_CLIENT_URLS=http://0.0.0.0:2379"
+      - "ETCD_LISTEN_CLIENT_URLS=http://0.0.0.0:2379"
+      - "ETCD_LISTEN_PEER_URLS=http://0.0.0.0:2380"
+      - "ETCD_INITIAL_ADVERTISE_PEER_URLS=http://0.0.0.0:2380"
+      - "ALLOW_NONE_AUTHENTICATION=yes" #参数指不用密码可以连接
+      - "ETCD_INITIAL_CLUSTER=node1=http://0.0.0.0:2380"
+      - "ETCD_NAME=node1"
+      - "ETCD_DATA_DIR=/opt/bitnami/etcd/data" 
+    ports:
+      - 2379:2379
+      - 2380:2380
